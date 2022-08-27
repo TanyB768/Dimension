@@ -15,6 +15,7 @@ ehthumbs.db
 
 # Visual Studio / MonoDevelop generated
 # =====================================
+[Ee]xported[Oo]bj/
 *.userprefs
 *.csproj
 *.pidb
