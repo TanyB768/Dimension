@@ -11,7 +11,7 @@ public class Player : MonoBehaviour
     private bool jumpKeyPressed;
     private float horizontalInput;// x-axis
     private Rigidbody rigidbodyComponent;// to shorten the code by not writing getcomponent again
-    private float horizontalSpeed = 2.7f;
+    [SerializeField] private float horizontalSpeed = 2.7f;
 
     // Start is called before the first frame update
     void Start()
