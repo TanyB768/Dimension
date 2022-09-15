@@ -8,28 +8,28 @@ public class AnimationStateController : MonoBehaviour
     //int isWalkingHash;
     int isRunningHash;
     int isJumpingHash;
+    int doubleJumpHash;
 
     // Start is called before the first frame update
     void Start()
     {
         animator = GetComponent<Animator>();
         //Just to save some performance we use StringToHash()
-        //isWalkingHash = Animator.StringToHash("isWalking");
         isRunningHash = Animator.StringToHash("isRunning");
         isJumpingHash = Animator.StringToHash("isJumping");
+        doubleJumpHash = Animator.StringToHash("doubleJump");
     }
 
     // Update is called once per frame
     void Update()
     {
+        bool doubleJump = animator.GetBool(doubleJumpHash);
         bool isRunning = animator.GetBool(isRunningHash);
-        //bool isWalking = animator.GetBool(isWalkingHash);
         bool isJumping = animator.GetBool(isJumpingHash);
         bool forwardKey = Input.GetKey(KeyCode.RightArrow);
-        //bool walkKey = Input.GetKey(KeyCode.RightControl);
         bool jumpkey = Input.GetKey(KeyCode.Space);
         bool backwardKey = Input.GetKey(KeyCode.LeftArrow);
-
+        
         // **** Idle to Running block Start ****
         if (!isRunning && forwardKey) //&& Player.isGrounded)//if player presses rightArrow
         {
@@ -59,7 +59,17 @@ public class AnimationStateController : MonoBehaviour
         if (isJumping && Player.isGrounded)
         {
             animator.SetBool(isJumpingHash, false);
+        } 
+        // For double Jump
+        if(isJumping && Player.doubleJumpKey)
+        {
+            animator.SetBool(doubleJumpHash, true);
         }
+        else
+        {
+            animator.SetBool(doubleJumpHash, false);
+        }
+        // Double Jump Block Ended
         if (Player.isGrounded && jumpkey)
         {
             animator.SetBool(isJumpingHash, false);
@@ -86,7 +96,7 @@ public class AnimationStateController : MonoBehaviour
         // **** Running to Jumping Block End ****
 
         // When player is Freefalling
-        if(!Player.isGrounded)
+        if (!Player.isGrounded)
         {
             animator.SetBool(isJumpingHash, true);
         }

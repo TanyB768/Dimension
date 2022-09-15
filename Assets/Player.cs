@@ -9,6 +9,7 @@ public class Player : MonoBehaviour
     [SerializeField] private LayerMask playerMask;
     public static bool isGrounded;
     private bool jumpKeyPressed;
+    public static bool doubleJumpKey = false;
     public float horizontalInput;// x-axis
     private Rigidbody rigidbodyComponent;// to shorten the code by not writing getcomponent again
     [SerializeField] private float horizontalSpeed = 2.7f;
@@ -35,17 +36,24 @@ public class Player : MonoBehaviour
             }
             horizontalInput = Input.GetAxisRaw("Horizontal");// No smoothing just raw input
             //horizontalInput = Input.GetAxis("Horizontal"); Smoothes out the player movement
-        }
-        // To rotate the player
-        if(Input.GetKey(KeyCode.LeftArrow) && direction == 1)
-        {
-            transform.Rotate(Vector3.up, 180.0f);
-            direction = -1;
-        }
-        if(Input.GetKey(KeyCode.RightArrow) && direction != 1)
-        {
-            transform.Rotate(Vector3.up, 180.0f);
-            direction = 1;
+            
+            // To rotate the player
+            if (Input.GetKey(KeyCode.LeftArrow) && direction == 1)
+            {
+                transform.Rotate(Vector3.up, 180.0f);
+                direction = -1;
+            }
+            if (Input.GetKey(KeyCode.RightArrow) && direction != 1)
+            {
+                transform.Rotate(Vector3.up, 180.0f);
+                direction = 1;
+            }
+
+            if (!isGrounded && !doubleJumpKey && Input.GetKeyDown(KeyCode.Space))
+            {
+                rigidbodyComponent.AddForce(Vector3.up * 4.5f, ForceMode.VelocityChange);
+                doubleJumpKey = true;
+            }
         }
     }
     // And apply those forces or actions in fixed update.
@@ -67,15 +75,15 @@ public class Player : MonoBehaviour
             //The overlapsphere() returns an array of colliders that it's collided with
             //the Length is the length of the array of colliders with which it has collided
             //so right now we have to check if it's colliding with anything at all so therefore,
-            //Length == 0 checks the first position of the collider array
+            //Length != 0 checks the first position of the collider array
             //if it is 0 then it's not colliding with anything and we're in the air.
-            //isGrounded = true;
             isGrounded = true;
         }
         if (jumpKeyPressed)
         {
-            rigidbodyComponent.AddForce(Vector3.up*6.35f, ForceMode.VelocityChange);
+            rigidbodyComponent.AddForce(Vector3.up * 6.35f, ForceMode.VelocityChange);
             jumpKeyPressed = false;
+            doubleJumpKey = false;
         }
     }
 
