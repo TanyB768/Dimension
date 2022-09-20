@@ -6,11 +6,13 @@ TagManager:
   tags:
   - WaterSurface
   - LevelFinish
+  - Slope
+  - Ground
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Slope
   - Water
   - UI
   - 

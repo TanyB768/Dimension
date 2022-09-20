@@ -10,10 +10,12 @@ public class Player : MonoBehaviour
     public static bool isGrounded;
     private bool jumpKeyPressed;
     public static bool doubleJumpKey = false;
+    public static bool isDashing = false;
+    public static bool isGroundDashing = false;
     public float horizontalInput;// x-axis
-    private Rigidbody rigidbodyComponent;// to shorten the code by not writing getcomponent again
+    public static Rigidbody rigidbodyComponent;// to shorten the code by not writing getcomponent again
     [SerializeField] private float horizontalSpeed = 2.7f;
-    private int direction = 1;
+    public static int direction = 1;
 
     // Start is called before the first frame update
     void Start()
@@ -25,8 +27,16 @@ public class Player : MonoBehaviour
     // Update is called once per frame
     // General Rule: Check for key presses in update()
     void Update()
-    {   
-        if(!PauseMenu.gamePaused)
+    {
+        /*
+        RaycastHit rayHit;
+        Ray slopeRayRight = new Ray(transform.position, Vector3.right);
+        Ray slopeRayLeft = new Ray(transform.position, Vector3.left);
+        */
+        //Debug.DrawRay(transform.position, Vector3.right * 1f, Color.red);
+        //Debug.DrawRay(transform.position, Vector3.left * 1f, Color.red);
+        
+        if (!PauseMenu.gamePaused && !GameOver.gameOver && !LevelComplete.levelComplete)
         {
             // Check is space key was pressed down
             if (Input.GetKeyDown(KeyCode.Space))
@@ -49,11 +59,74 @@ public class Player : MonoBehaviour
                 direction = 1;
             }
 
+            // For Double Jumps
             if (!isGrounded && !doubleJumpKey && Input.GetKeyDown(KeyCode.Space))
             {
                 rigidbodyComponent.AddForce(Vector3.up * 4.5f, ForceMode.VelocityChange);
                 doubleJumpKey = true;
             }
+
+            // For Right Air Dash
+            if (Input.GetKeyDown(KeyCode.RightControl) && direction == 1 && !isGrounded && !isDashing)
+            {
+                if(RayCast.onSlope)
+                {
+                    rigidbodyComponent.AddForce(RayCast.groundNormal * 70f, ForceMode.VelocityChange);
+                    //rigidbodyComponent.AddForce(-RayCast.groundNormal * 10f, ForceMode.VelocityChange);
+                    rigidbodyComponent.AddForce(Vector3.down * 30f, ForceMode.VelocityChange);
+                    isDashing = true;
+                }
+                else
+                {
+                    rigidbodyComponent.AddForce(Vector3.right * 100f, ForceMode.Impulse);
+                    isDashing = true;
+                }
+                //rigidbodyComponent.AddForce(Vector3.right * 100f, ForceMode.Impulse);
+                //rigidbodyComponent.AddForce(RayCast.groundNormal * 100f, ForceMode.VelocityChange);
+                isDashing = true;
+            }
+            else if (isDashing && !isGrounded)
+            {
+                isDashing = true;
+            }
+            else if (isGrounded)
+            {
+                isDashing = false;
+            }
+            // For Left Air Dash
+            if (Input.GetKeyDown(KeyCode.RightControl) && direction != 1 && !isGrounded && !isDashing)
+            {
+                if (RayCast.onSlope)
+                {
+                    rigidbodyComponent.AddForce(RayCast.groundNormal * 70f, ForceMode.VelocityChange);
+                    //rigidbodyComponent.AddForce(-RayCast.groundNormal * 10f, ForceMode.VelocityChange);
+                    rigidbodyComponent.AddForce(Vector3.down * 30f, ForceMode.VelocityChange);
+                    isDashing = true;
+                }
+                else
+                {
+                    rigidbodyComponent.AddForce(Vector3.left * 100f, ForceMode.Impulse);
+                    isDashing = true;
+                }
+                //rigidbodyComponent.AddForce(Vector3.left * 100f, ForceMode.Impulse);
+                //isDashing = true;
+            }
+            else if (isDashing && !isGrounded)
+            {
+                isDashing = true;
+            }
+            else if (isGrounded)
+            {
+                isDashing = false;
+            }
+
+            // For Dashing on the Ground
+            /*        
+            if (isGrounded && !isGroundDashing && Input.GetKeyDown(KeyCode.RightControl))
+            {
+                StartCoroutine(GroundDash());
+            }
+            */
         }
     }
     // And apply those forces or actions in fixed update.
@@ -72,11 +145,6 @@ public class Player : MonoBehaviour
         }
         if (Physics.OverlapSphere(groundCheckTransform.position, 0.1f, playerMask).Length != 0)
         {
-            //The overlapsphere() returns an array of colliders that it's collided with
-            //the Length is the length of the array of colliders with which it has collided
-            //so right now we have to check if it's colliding with anything at all so therefore,
-            //Length != 0 checks the first position of the collider array
-            //if it is 0 then it's not colliding with anything and we're in the air.
             isGrounded = true;
         }
         if (jumpKeyPressed)
@@ -86,7 +154,26 @@ public class Player : MonoBehaviour
             doubleJumpKey = false;
         }
     }
+    // Disabled Ground Dash Function because it's buggy and shoots player up when player is on a slope
+    /*
+    IEnumerator GroundDash()
+    {
+        // For Ground Dash
+        if (direction == 1)
+        {
+            rigidbodyComponent.AddForce(Vector3.right * 100f, ForceMode.Impulse);
+            isGroundDashing = true;
+        }
+        if (direction != 1)
+        {
+            rigidbodyComponent.AddForce(Vector3.left * 100f, ForceMode.Impulse);
+            isGroundDashing = true;
+        }
 
+        yield return new WaitForSeconds(1.5f);
+        isGroundDashing = false;
+    }
+    */
     private void OnTriggerEnter(Collider other) // For triggering coins
     {
         if(other.gameObject.layer == 7)
