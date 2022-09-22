@@ -9,6 +9,7 @@ public class AnimationStateController : MonoBehaviour
     int isRunningHash;
     int isJumpingHash;
     int doubleJumpHash;
+    int isDashingHash;
     //bool isDoubleJumping = false;
 
     // Start is called before the first frame update
@@ -19,6 +20,7 @@ public class AnimationStateController : MonoBehaviour
         isRunningHash = Animator.StringToHash("isRunning");
         isJumpingHash = Animator.StringToHash("isJumping");
         doubleJumpHash = Animator.StringToHash("doubleJump");
+        isDashingHash = Animator.StringToHash("isDashing");
     }
 
     // Update is called once per frame
@@ -76,11 +78,11 @@ public class AnimationStateController : MonoBehaviour
             // Dash Block Start
             if (isJumping && Player.isDashing)
             {
-                animator.SetBool("isDashing", true);
+                animator.SetBool(isDashingHash, true);
             }
             else
             {
-                animator.SetBool("isDashing", false);
+                animator.SetBool(isDashingHash, false);
             }
             // Dash Block End
 

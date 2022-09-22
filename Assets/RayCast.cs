@@ -12,12 +12,13 @@ public class RayCast : MonoBehaviour
     {
         Debug.DrawRay(transform.position + Vector3.down * 0.5f, Vector3.right * 4f);
         Debug.DrawRay(transform.position + Vector3.down * 0.5f, Vector3.left * 4f);
-        //Debug.DrawRay(transform.position, Vector3.down * 3f);
+        Debug.DrawRay(transform.position, Vector3.down * 0.7f);
         RaycastHit hit;
         Ray rayRight = new Ray(transform.position + Vector3.down * 0.5f, Vector3.right * 4f);
         Ray rayLeft = new Ray(transform.position + Vector3.down * 0.5f, Vector3.left * 4f);
-        //Ray rayDown = new Ray(transform.position, Vector3.down * 3f);
-
+        Ray rayDown = new Ray(transform.position, Vector3.down * 0.7f);
+        
+        // Right Ray
         if(Physics.Raycast(rayRight, out hit, 4f))
         {
             if (hit.collider.tag == "Slope")
@@ -38,7 +39,8 @@ public class RayCast : MonoBehaviour
             else
                 onSlope = false;
         }
-
+        
+        // Left Ray
         if (Physics.Raycast(rayLeft, out hit, 4f))
         {
             if (hit.collider.tag == "Slope")
@@ -59,20 +61,22 @@ public class RayCast : MonoBehaviour
             else
                 onSlope = false;
         }
-        /*
-        // Down Ray
-        if (Physics.Raycast(rayDown, out hit, 3f))
+
+        // Ray Down to stop the player bouncing a little when landed on the ground
+        if(Physics.Raycast(rayDown, out hit, 0.7f))//0.7f
         {
-            if (hit.collider.tag == "Slope")
+            if (hit.collider.tag == "Ground" && !Player.isGrounded)
             {
-                onSlope = true;
-                Debug.Log("Slope");
-                Debug.DrawRay(transform.position, Vector3.down * 3f, Color.green);
+                Debug.Log("On Ground");
+                Debug.DrawRay(transform.position, Vector3.down * 0.7f, Color.green);
+                Player.rigidbodyComponent.AddForce(Vector3.down * 0.1f, ForceMode.VelocityChange);
             }
-            else
+            if (hit.collider.tag == "WaterSurface")
             {
-                onSlope = false;
+                Debug.Log("On Water");
+                Debug.DrawRay(transform.position, Vector3.down * 0.7f, Color.green);
+                Player.rigidbodyComponent.AddForce(Vector3.down * 0.1f, ForceMode.VelocityChange);
             }
-        }*/
+        }
     }
 }
