@@ -10,6 +10,7 @@ public class AnimationStateController : MonoBehaviour
     int isJumpingHash;
     int doubleJumpHash;
     int isDashingHash;
+    int isCrouchingHash;
     //bool isDoubleJumping = false;
 
     // Start is called before the first frame update
@@ -21,12 +22,13 @@ public class AnimationStateController : MonoBehaviour
         isJumpingHash = Animator.StringToHash("isJumping");
         doubleJumpHash = Animator.StringToHash("doubleJump");
         isDashingHash = Animator.StringToHash("isDashing");
+        isCrouchingHash = Animator.StringToHash("isCrouching");
     }
 
     // Update is called once per frame
     void Update()
     {
-        bool doubleJump = animator.GetBool(doubleJumpHash);
+        //bool doubleJump = animator.GetBool(doubleJumpHash);
         bool isRunning = animator.GetBool(isRunningHash);
         bool isJumping = animator.GetBool(isJumpingHash);
         bool forwardKey = Input.GetKey(KeyCode.RightArrow);
@@ -35,12 +37,12 @@ public class AnimationStateController : MonoBehaviour
         if (!PauseMenu.gamePaused && !GameOver.gameOver && !LevelComplete.levelComplete)
         {
             // **** Idle to Running block Start ****
-            if (!isRunning && forwardKey) //&& Player.isGrounded)//if player presses rightArrow
+            if (!isRunning && forwardKey) 
             {
                 //then make player run in forward
                 animator.SetBool(isRunningHash, true);
             }
-            if (!isRunning && backwardKey)// && Player.isGrounded)//if player presses leftArrow
+            if (!isRunning && backwardKey)
             {
                 //then make player run backward
                 animator.SetBool(isRunningHash, true);
@@ -116,6 +118,32 @@ public class AnimationStateController : MonoBehaviour
             {
                 animator.SetBool(isJumpingHash, true);
             }
+            
+            // **** Idle to Crouching Block Start ****
+            if(Player.isCrouching)
+            {
+                animator.SetBool(isCrouchingHash, true);
+            }
+            else
+            {
+                animator.SetBool(isCrouchingHash, false);
+            }
+            // **** Crouch Block End (also includes running to crouch and vice versa) ****
+        
+            // **** Slide Block Start
+            if(Player.isSliding && !RayCast.onSlope)
+            {
+                animator.SetBool("isSliding", true);
+            }
+            else if(Player.isSliding && RayCast.onSlope)
+            {
+                animator.SetBool("isSliding", false);
+            }
+            else if(!Player.isSliding)
+            {
+                animator.SetBool("isSliding", false);
+            }
+            // **** Slide Block End
         }
     }
 }

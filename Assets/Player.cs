@@ -12,9 +12,14 @@ public class Player : MonoBehaviour
     public static bool doubleJumpKey = false;
     public static bool isDashing = false;
     public static bool isGroundDashing = false;
+    public static bool isCrouching = false;
+    public static bool isSliding = false;
     public float horizontalInput;// x-axis
     public static Rigidbody rigidbodyComponent;// to shorten the code by not writing getcomponent again
     [SerializeField] private float horizontalSpeed = 2.8f;// Original 2.7f
+    [SerializeField] private float crouchHeight = 0.25f;
+    [SerializeField] private float standHeight = 0.5f;
+    public static Vector3 moveDirection;
     public static int direction = 1;
 
     // Start is called before the first frame update
@@ -34,77 +39,72 @@ public class Player : MonoBehaviour
             {
                 jumpKeyPressed = true;
             }
+            moveDirection = new Vector3(horizontalInput, 0f, 0f);
+            moveDirection.Normalize();
             horizontalInput = Input.GetAxisRaw("Horizontal");// No smoothing just raw input
             //horizontalInput = Input.GetAxis("Horizontal"); Smoothes out the player movement
             
+            // To Prevent the player to shoot up when dashing towards sharp edges of level blocks
+            if(rigidbodyComponent.velocity.y > 25f)
+            {
+                rigidbodyComponent.AddForce(Vector3.down * 10f, ForceMode.VelocityChange);
+            }
+
             // To rotate the player
-            if (Input.GetKeyDown(KeyCode.LeftArrow) && direction == 1)
+            if(moveDirection != Vector3.zero)// To check if the player is moving
             {
-                transform.Rotate(Vector3.up, 180.0f);
-                direction = -1;
+                // if it is, then rotate the player to it's move direction
+                transform.right = moveDirection;
             }
-            if (Input.GetKeyDown(KeyCode.RightArrow) && direction != 1)
+            // For Crouching
+            if (Input.GetKeyDown(KeyCode.DownArrow) && !isCrouching && isGrounded)
             {
-                transform.Rotate(Vector3.up, 180.0f);
-                direction = 1;
+                isCrouching = true;
+                transform.localScale = new Vector3(standHeight, crouchHeight, standHeight);
+                rigidbodyComponent.AddForce(Vector3.down * 50f, ForceMode.Impulse);
+                horizontalSpeed = 1.25f;
+            }
+            if(Input.GetKeyUp(KeyCode.DownArrow) && isCrouching && isGrounded)
+            {
+                isCrouching = false;
+                transform.localScale = new Vector3(standHeight, standHeight, standHeight);
+                horizontalSpeed = 2.8f;
+            }
+            if(isCrouching && jumpKeyPressed)
+            {
+                isCrouching = false;
+                transform.localScale = new Vector3(standHeight, standHeight, standHeight);
+                horizontalSpeed = 2.8f;
             }
 
-            //if(Input.Get)
-
+            // For Sliding
+            if (Input.GetKeyDown(KeyCode.C) && !isSliding && isGrounded && moveDirection != Vector3.zero && !RayCast.onSlope)
+            {
+                isSliding = true;
+                Slide();
+            }
+            
             // For Double Jumps
             if (!isGrounded && !doubleJumpKey && Input.GetKeyDown(KeyCode.Space))
             {
                 rigidbodyComponent.AddForce(Vector3.up * 4.5f, ForceMode.VelocityChange);
                 doubleJumpKey = true;
             }
-
-            // For Right Air Dash
-            if (Input.GetKeyDown(KeyCode.RightControl) && direction == 1 && !isGrounded && !isDashing)
+            
+            // For Air Dash
+            if (Input.GetKeyDown(KeyCode.RightControl) && !isGrounded && !isDashing)
             {
-                if(RayCast.onSlope)
-                {
-                    rigidbodyComponent.AddForce(RayCast.groundNormal * 70f, ForceMode.VelocityChange);
-                    rigidbodyComponent.AddForce(Vector3.down * 30f, ForceMode.VelocityChange);
-                    isDashing = true;
-                }
-                else
-                {
-                    rigidbodyComponent.AddForce(Vector3.right * 100f, ForceMode.Impulse);
-                    isDashing = true;
-                }
+                rigidbodyComponent.AddForce(moveDirection.normalized * 100f, ForceMode.Impulse);
                 isDashing = true;
             }
             else if (isDashing && !isGrounded)
-            {
+            { 
                 isDashing = true;
             }
             else if (isGrounded)
             {
                 isDashing = false;
             }
-            // For Left Air Dash
-            if (Input.GetKeyDown(KeyCode.RightControl) && direction != 1 && !isGrounded && !isDashing)
-            {
-                if (RayCast.onSlope)
-                {
-                    rigidbodyComponent.AddForce(RayCast.groundNormal * 70f, ForceMode.VelocityChange);
-                    rigidbodyComponent.AddForce(Vector3.down * 30f, ForceMode.VelocityChange);
-                    isDashing = true;
-                }
-                else
-                {
-                    rigidbodyComponent.AddForce(Vector3.left * 100f, ForceMode.Impulse);
-                    isDashing = true;
-                }
-            }
-            else if (isDashing && !isGrounded)
-            {
-                isDashing = true;
-            }
-            else if (isGrounded)
-            {
-                isDashing = false;
-            }  
         }
     }
     // And apply those forces or actions in fixed update.
@@ -133,6 +133,21 @@ public class Player : MonoBehaviour
         }
     }
 
+    private void Slide()
+    {
+        transform.localScale = new Vector3(standHeight, crouchHeight, standHeight);
+        rigidbodyComponent.AddForce(Vector3.down * 50f, ForceMode.Impulse);
+        horizontalSpeed = 4f;
+        Invoke("ResetSlide", 0.75f);// An Invoke() is called after a delay in seconds, here, 1 second.
+        // Invoke() is used to reset slide after some time has passed.
+    }
+    private void ResetSlide() // To Reset Slide after 1 second
+    {
+        isSliding = false;
+        transform.localScale = new Vector3(standHeight, standHeight, standHeight);
+        horizontalSpeed = 2.8f;
+    }
+
     private void OnTriggerEnter(Collider other) // For triggering coins
     {
         if(other.gameObject.layer == 7)
@@ -146,6 +161,8 @@ public class Player : MonoBehaviour
         if(collision.gameObject.CompareTag("WaterSurface"))
         {
             Debug.Log("Water Collision");
+            isSliding = false;//To stop the player from increasing in size after gameover
+            // Because the ResetSlide() is called 0.75 sec after Slide() is called.
             FindObjectOfType<GameOver>().PauseOnGameOver();
         }
 
