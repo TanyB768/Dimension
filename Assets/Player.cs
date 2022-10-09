@@ -14,9 +14,14 @@ public class Player : MonoBehaviour
     public static bool isGroundDashing = false;
     public static bool isCrouching = false;
     public static bool isSliding = false;
+    public static bool isClimbingUp = false;
+    public static bool isClimbingDown = false;
+    public static bool onLedge = false;
     public float horizontalInput;// x-axis
+    public static float verticalInput; // y-axis
     public static Rigidbody rigidbodyComponent;// to shorten the code by not writing getcomponent again
     [SerializeField] private float horizontalSpeed = 2.8f;// Original 2.7f
+    [SerializeField] private float verticalSpeed = 2f;
     [SerializeField] private float crouchHeight = 0.25f;
     [SerializeField] private float standHeight = 0.5f;
     public static Vector3 moveDirection;
@@ -39,8 +44,9 @@ public class Player : MonoBehaviour
             {
                 jumpKeyPressed = true;
             }
-            moveDirection = new Vector3(horizontalInput, 0f, 0f);
+            moveDirection = new Vector3(horizontalInput, 0f, 0f); // To get the direction of movement
             moveDirection.Normalize();
+            verticalInput = Input.GetAxis("Vertical"); // To climb Walls ONLY
             horizontalInput = Input.GetAxisRaw("Horizontal");// No smoothing just raw input
             //horizontalInput = Input.GetAxis("Horizontal"); Smoothes out the player movement
             
@@ -56,8 +62,9 @@ public class Player : MonoBehaviour
                 // if it is, then rotate the player to it's move direction
                 transform.right = moveDirection;
             }
+
             // For Crouching
-            if (Input.GetKeyDown(KeyCode.DownArrow) && !isCrouching && isGrounded)
+            if (Input.GetKeyDown(KeyCode.DownArrow) && !isCrouching && isGrounded && !isSliding)
             {
                 isCrouching = true;
                 transform.localScale = new Vector3(standHeight, crouchHeight, standHeight);
@@ -78,7 +85,7 @@ public class Player : MonoBehaviour
             }
 
             // For Sliding
-            if (Input.GetKeyDown(KeyCode.C) && !isSliding && isGrounded && moveDirection != Vector3.zero && !RayCast.onSlope)
+            if (Input.GetKeyDown(KeyCode.C) && !isSliding && isGrounded && !isCrouching && moveDirection != Vector3.zero && !RayCast.onSlope)
             {
                 isSliding = true;
                 Slide();
@@ -98,19 +105,46 @@ public class Player : MonoBehaviour
                 isDashing = true;
             }
             else if (isDashing && !isGrounded)
-            { 
                 isDashing = true;
-            }
             else if (isGrounded)
-            {
                 isDashing = false;
+
+            // For Wall Climbing
+            if (RayCast.onWall && !isGrounded)
+            {
+                /*if (Input.GetKeyDown(KeyCode.Space))
+                {
+                    isClimbingUp = true;
+                    jumpKeyPressed = true;
+                    //WallJump();
+                }*/
+                if (Input.GetKey(KeyCode.UpArrow))
+                {
+                    isClimbingUp = true;
+                    rigidbodyComponent.velocity = new Vector3(rigidbodyComponent.velocity.x, verticalInput * verticalSpeed, 0f);
+                }
+                else
+                    isClimbingUp = false;
+                if (Input.GetKey(KeyCode.DownArrow))
+                {
+                    isClimbingDown = true;
+                    rigidbodyComponent.velocity = new Vector3(rigidbodyComponent.velocity.x, verticalInput * verticalSpeed, 0f);
+                    //transform.position += Vector3.up * Time.deltaTime * verticalSpeed;
+                }
+                else
+                    isClimbingDown = false;
+            }
+            else
+            {
+                isClimbingUp = false;
+                isClimbingDown = false;
             }
         }
     }
     // And apply those forces or actions in fixed update.
     private void FixedUpdate()
     {
-        rigidbodyComponent.velocity = new Vector3(horizontalInput * horizontalSpeed, rigidbodyComponent.velocity.y, 0);//(x,y,z)
+        rigidbodyComponent.velocity = new Vector3(horizontalInput * horizontalSpeed, rigidbodyComponent.velocity.y, 0f);//(x,y,z)
         if (Physics.OverlapSphere(groundCheckTransform.position,0.1f, playerMask).Length == 0)
         {
             //The overlapsphere() returns an array of colliders that it's collided with
@@ -147,13 +181,24 @@ public class Player : MonoBehaviour
         transform.localScale = new Vector3(standHeight, standHeight, standHeight);
         horizontalSpeed = 2.8f;
     }
-
-    private void OnTriggerEnter(Collider other) // For triggering coins
+    private void WallJump()
     {
-        if(other.gameObject.layer == 7)
+        //rigidbodyComponent.AddForce(-RayCast.groundNormal * 20f, ForceMode.VelocityChange);
+    }
+    private void OnTriggerEnter(Collider other) // For triggering coins & detecting ledges
+    {
+        if(other.gameObject.layer == 7) // Coin Layer
         {
             Destroy(other.gameObject);
         }
+        if(other.gameObject.layer == 8) // Ledge Layer (bool to play ledge climb animation) 
+        {
+            onLedge = true;
+        }
+    }
+    private void OnTriggerExit(Collider other)
+    {
+        onLedge = false; // To stop/complete the ledge climb animation
     }
 
     private void OnCollisionEnter(Collision collision) // For Water Collision

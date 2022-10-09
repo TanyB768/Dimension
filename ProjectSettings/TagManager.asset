@@ -8,6 +8,8 @@ TagManager:
   - LevelFinish
   - Slope
   - Ground
+  - Wall
+  - Ledge
   layers:
   - Default
   - TransparentFX
@@ -15,9 +17,9 @@ TagManager:
   - Slope
   - Water
   - UI
+  - Wall
   - 
-  - 
-  - 
+  - Ledge
   - 
   - 
   - 

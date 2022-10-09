@@ -12,6 +12,7 @@ public class MainMenu : MonoBehaviour
         // the index of our currently loaded/active scene.
         //SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex + 1);
         SceneManager.LoadScene("Game");
+        ScoreSystem.theScore = 0;
         Debug.Log("Playing Game");
     }
 

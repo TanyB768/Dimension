@@ -11,6 +11,10 @@ public class AnimationStateController : MonoBehaviour
     int doubleJumpHash;
     int isDashingHash;
     int isCrouchingHash;
+    int isSlidingHash;
+    int isClimbingUpHash;
+    int isClimbingDownHash;
+    int ClimbHash;
     //bool isDoubleJumping = false;
 
     // Start is called before the first frame update
@@ -23,6 +27,10 @@ public class AnimationStateController : MonoBehaviour
         doubleJumpHash = Animator.StringToHash("doubleJump");
         isDashingHash = Animator.StringToHash("isDashing");
         isCrouchingHash = Animator.StringToHash("isCrouching");
+        isSlidingHash = Animator.StringToHash("isSliding");
+        isClimbingUpHash = Animator.StringToHash("isClimbingUp");
+        isClimbingDownHash = Animator.StringToHash("isClimbingDown");
+        ClimbHash = Animator.StringToHash("Climb");
     }
 
     // Update is called once per frame
@@ -133,17 +141,45 @@ public class AnimationStateController : MonoBehaviour
             // **** Slide Block Start
             if(Player.isSliding && !RayCast.onSlope)
             {
-                animator.SetBool("isSliding", true);
+                animator.SetBool(isSlidingHash, true);
             }
             else if(Player.isSliding && RayCast.onSlope)
             {
-                animator.SetBool("isSliding", false);
+                animator.SetBool(isSlidingHash, false);
             }
             else if(!Player.isSliding)
             {
-                animator.SetBool("isSliding", false);
+                animator.SetBool(isSlidingHash, false);
             }
-            // **** Slide Block End
+            // **** Slide Block End ****
+
+            // **** Climb Block Start ****
+            if(Player.isClimbingUp && !Player.isGrounded)
+            {
+                animator.SetBool(isClimbingUpHash, true);            
+            }
+            else
+            {
+                animator.SetBool(isClimbingUpHash, false);
+            }
+            if(Player.isClimbingDown && !Player.isGrounded && !Player.isClimbingUp)
+            {
+                animator.SetBool(isClimbingDownHash, true);
+            }
+            else
+            {
+                animator.SetBool(isClimbingDownHash, false);
+            }
+            //if(RayCast.wallClimbAnim)
+            if(Player.onLedge)
+            {
+                animator.SetBool(ClimbHash, true);
+            }
+            else
+            {
+                animator.SetBool(ClimbHash, false);
+            }
+            // **** Climb Block End ****
         }
     }
 }
