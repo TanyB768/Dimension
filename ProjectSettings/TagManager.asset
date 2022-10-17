@@ -11,6 +11,7 @@ TagManager:
   - Wall
   - Ledge
   - Spike
+  - Health
   layers:
   - Default
   - TransparentFX
@@ -23,7 +24,7 @@ TagManager:
   - Ledge
   - Player
   - Enemy
-  - 
+  - Health
   - 
   - 
   - 

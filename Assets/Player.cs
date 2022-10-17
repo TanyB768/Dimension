@@ -179,7 +179,17 @@ public class Player : MonoBehaviour
     {
         if (other.gameObject.layer == 7) // Coin Layer
             Destroy(other.gameObject);
-        
+
+        if (other.gameObject.layer == 11) // Heart Layer
+        {
+            Debug.Log("Heart Pickup");
+            if (HealthManager.health < 3)
+            {
+                HealthManager.health++;
+                Destroy(other.gameObject);
+            }
+        }
+
         if (other.gameObject.layer == 8) // Ledge Layer (bool to play ledge climb animation) 
             onLedge = true;
     }
@@ -197,8 +207,8 @@ public class Player : MonoBehaviour
             // Because the ResetSlide() is called 0.75 sec after Slide() is called.
             FindObjectOfType<GameOver>().PauseOnGameOver();
         }
-
-        if(collision.gameObject.CompareTag("Spike"))
+        
+        if(collision.gameObject.CompareTag("Spike")) // For Damaging and killing the player with spikes
         {
             //Debug.Log("Spike hit");
             isSliding = false;//To stop the player from increasing in size after gameover
@@ -212,6 +222,14 @@ public class Player : MonoBehaviour
             else
                 StartCoroutine(DamagePlayer());
         }
+        /*
+        if(collision.gameObject.CompareTag("Health"))
+        {
+            Debug.Log("Health + 1");
+            if(HealthManager.health < 2)
+            HealthManager.health++;
+        }
+        */
         if(collision.gameObject.CompareTag("LevelFinish")) // For Level Finish
         {
             Debug.Log("LevelFinish");
@@ -221,9 +239,7 @@ public class Player : MonoBehaviour
     IEnumerator DamagePlayer()
     {
         Physics.IgnoreLayerCollision(9, 10); // To disable the collision between player and any damaging layer
-        //Debug.Log("Ignore Collision True");
         yield return new WaitForSeconds(1); // To wait for 1 Second
         Physics.IgnoreLayerCollision(9, 10, false); // To re-enable the collision between player and any damaging layer
-        //Debug.Log("Ignore Collision False");
     }
 }
