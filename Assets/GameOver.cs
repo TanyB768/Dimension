@@ -26,6 +26,15 @@ public class GameOver : MonoBehaviour
         gameOverUI.SetActive(true);
         Time.timeScale = 0f;
         gameOver = true;
+
+        Player.doubleJumpKey = false;
+        Player.isDashing = false;
+        Player.isGroundDashing = false;
+        Player.isCrouching = false;
+        Player.isSliding = false;
+        Player.isClimbingUp = false;
+        Player.isClimbingDown = false;
+        Player.onLedge = false;
     }
 
     public void MainMenu()

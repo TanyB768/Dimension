@@ -112,12 +112,6 @@ public class Player : MonoBehaviour
             // For Wall Climbing
             if (RayCast.onWall && !isGrounded)
             {
-                /*if (Input.GetKeyDown(KeyCode.Space))
-                {
-                    isClimbingUp = true;
-                    jumpKeyPressed = true;
-                    //WallJump();
-                }*/
                 if (Input.GetKey(KeyCode.UpArrow))
                 {
                     isClimbingUp = true;
@@ -156,9 +150,8 @@ public class Player : MonoBehaviour
             return;
         }
         if (Physics.OverlapSphere(groundCheckTransform.position, 0.1f, playerMask).Length != 0)
-        {
             isGrounded = true;
-        }
+
         if (jumpKeyPressed)
         {
             rigidbodyComponent.AddForce(Vector3.up * 6.4f, ForceMode.VelocityChange);//Original 6.35f
@@ -172,7 +165,7 @@ public class Player : MonoBehaviour
         transform.localScale = new Vector3(standHeight, crouchHeight, standHeight);
         rigidbodyComponent.AddForce(Vector3.down * 50f, ForceMode.Impulse);
         horizontalSpeed = 4f;
-        Invoke("ResetSlide", 0.75f);// An Invoke() is called after a delay in seconds, here, 1 second.
+        Invoke("ResetSlide", 0.85f);// An Invoke() is called after a delay in seconds, here, 1 second.
         // Invoke() is used to reset slide after some time has passed.
     }
     private void ResetSlide() // To Reset Slide after 1 second
@@ -181,20 +174,14 @@ public class Player : MonoBehaviour
         transform.localScale = new Vector3(standHeight, standHeight, standHeight);
         horizontalSpeed = 2.8f;
     }
-    private void WallJump()
-    {
-        //rigidbodyComponent.AddForce(-RayCast.groundNormal * 20f, ForceMode.VelocityChange);
-    }
+
     private void OnTriggerEnter(Collider other) // For triggering coins & detecting ledges
     {
-        if(other.gameObject.layer == 7) // Coin Layer
-        {
+        if (other.gameObject.layer == 7) // Coin Layer
             Destroy(other.gameObject);
-        }
-        if(other.gameObject.layer == 8) // Ledge Layer (bool to play ledge climb animation) 
-        {
+        
+        if (other.gameObject.layer == 8) // Ledge Layer (bool to play ledge climb animation) 
             onLedge = true;
-        }
     }
     private void OnTriggerExit(Collider other)
     {
@@ -211,10 +198,32 @@ public class Player : MonoBehaviour
             FindObjectOfType<GameOver>().PauseOnGameOver();
         }
 
+        if(collision.gameObject.CompareTag("Spike"))
+        {
+            //Debug.Log("Spike hit");
+            isSliding = false;//To stop the player from increasing in size after gameover
+            // Because the ResetSlide() is called 0.75 sec after Slide() is called.
+
+            HealthManager.health--;
+            if (HealthManager.health == 0)
+            {
+                FindObjectOfType<GameOver>().PauseOnGameOver();
+            }
+            else
+                StartCoroutine(DamagePlayer());
+        }
         if(collision.gameObject.CompareTag("LevelFinish")) // For Level Finish
         {
             Debug.Log("LevelFinish");
             FindObjectOfType<LevelComplete>().PauseOnLevelComplete();
         }
+    }
+    IEnumerator DamagePlayer()
+    {
+        Physics.IgnoreLayerCollision(9, 10); // To disable the collision between player and any damaging layer
+        //Debug.Log("Ignore Collision True");
+        yield return new WaitForSeconds(1); // To wait for 1 Second
+        Physics.IgnoreLayerCollision(9, 10, false); // To re-enable the collision between player and any damaging layer
+        //Debug.Log("Ignore Collision False");
     }
 }
