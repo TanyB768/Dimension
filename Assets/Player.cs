@@ -190,6 +190,13 @@ public class Player : MonoBehaviour
             }
         }
 
+        if(other.gameObject.layer == 12) // Power Up Star
+        {
+            Debug.Log("Power Up");
+            Destroy(other.gameObject);
+            StartCoroutine(PowerUpStar());
+        }
+
         if (other.gameObject.layer == 8) // Ledge Layer (bool to play ledge climb animation) 
             onLedge = true;
     }
@@ -222,14 +229,7 @@ public class Player : MonoBehaviour
             else
                 StartCoroutine(DamagePlayer());
         }
-        /*
-        if(collision.gameObject.CompareTag("Health"))
-        {
-            Debug.Log("Health + 1");
-            if(HealthManager.health < 2)
-            HealthManager.health++;
-        }
-        */
+
         if(collision.gameObject.CompareTag("LevelFinish")) // For Level Finish
         {
             Debug.Log("LevelFinish");
@@ -241,5 +241,14 @@ public class Player : MonoBehaviour
         Physics.IgnoreLayerCollision(9, 10); // To disable the collision between player and any damaging layer
         yield return new WaitForSeconds(1); // To wait for 1 Second
         Physics.IgnoreLayerCollision(9, 10, false); // To re-enable the collision between player and any damaging layer
+    }
+
+    IEnumerator PowerUpStar()
+    {
+        horizontalSpeed = 5;
+        Physics.IgnoreLayerCollision(9, 10);
+        yield return new WaitForSeconds(10);
+        horizontalSpeed = 2.8f;
+        Physics.IgnoreLayerCollision(9, 10, false);
     }
 }
