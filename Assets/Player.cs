@@ -22,6 +22,9 @@ public class Player : MonoBehaviour
     public static Rigidbody rigidbodyComponent;// to shorten the code by not writing getcomponent again
     [SerializeField] private float horizontalSpeed = 2.8f;// Original 2.7f
     [SerializeField] private float verticalSpeed = 2f;
+    [SerializeField] private float jumpForce = 6.4f;
+    [SerializeField] private float doubleJumpForce = 4.5f;
+    [SerializeField] private float fallMultiplier = 3.5f;
     [SerializeField] private float crouchHeight = 0.25f;
     [SerializeField] private float standHeight = 0.5f;
     public static Vector3 moveDirection;
@@ -33,6 +36,13 @@ public class Player : MonoBehaviour
         // Optimizes code & performance and doesn't need to fetch a component every single time.
         rigidbodyComponent = GetComponent<Rigidbody>();
     }
+
+    private void Awake()
+    {
+        Physics.IgnoreLayerCollision(9, 10, false); 
+        // To fix a bug where the player collision would not re-enable after dying from spikes or taking a power up and dying before 10 sec.
+    }
+
     // Update is called once per frame
     // General Rule: Check for key presses in update()
     void Update()
@@ -55,9 +65,15 @@ public class Player : MonoBehaviour
             {
                 rigidbodyComponent.AddForce(Vector3.down * 10f, ForceMode.VelocityChange);
             }
+            
+            // To make the jump feel less floaty
+            if (rigidbodyComponent.velocity.y < 0)
+            {
+                rigidbodyComponent.AddForce(Vector3.down * fallMultiplier * Time.deltaTime, ForceMode.VelocityChange);
+            }
 
             // To rotate the player
-            if(moveDirection != Vector3.zero)// To check if the player is moving
+            if (moveDirection != Vector3.zero)// To check if the player is moving
             {
                 // if it is, then rotate the player to it's move direction
                 transform.right = moveDirection;
@@ -94,7 +110,9 @@ public class Player : MonoBehaviour
             // For Double Jumps
             if (!isGrounded && !doubleJumpKey && Input.GetKeyDown(KeyCode.Space))
             {
-                rigidbodyComponent.AddForce(Vector3.up * 4.5f, ForceMode.VelocityChange);
+                rigidbodyComponent.velocity = new Vector3(rigidbodyComponent.velocity.x, 0f, 0f);// Resets the y velocity to 0 to 
+                // avoid unnatural height gain in the double jump
+                rigidbodyComponent.AddForce(Vector3.up * doubleJumpForce, ForceMode.VelocityChange);
                 doubleJumpKey = true;
             }
             
@@ -154,10 +172,16 @@ public class Player : MonoBehaviour
 
         if (jumpKeyPressed)
         {
-            rigidbodyComponent.AddForce(Vector3.up * 6.4f, ForceMode.VelocityChange);//Original 6.35f
+            rigidbodyComponent.AddForce(Vector3.up * jumpForce, ForceMode.VelocityChange);//Original 6.35f
             jumpKeyPressed = false;
             doubleJumpKey = false;
         }
+        /*
+        if(rigidbodyComponent.velocity.y < 0)
+        {
+            rigidbodyComponent.velocity += Vector3.up * fallMultiplier * Physics.gravity.y * Time.deltaTime;
+        }
+        */
     }
 
     private void Slide()
@@ -177,10 +201,10 @@ public class Player : MonoBehaviour
 
     private void OnTriggerEnter(Collider other) // For triggering coins & detecting ledges
     {
-        if (other.gameObject.layer == 7) // Coin Layer
+        if (other.gameObject.layer == 7) // Coin Layer for score
             Destroy(other.gameObject);
 
-        if (other.gameObject.layer == 11) // Heart Layer
+        if (other.gameObject.layer == 11) // Heart layer for Heart Power Up
         {
             Debug.Log("Heart Pickup");
             if (HealthManager.health < 3)
@@ -190,7 +214,7 @@ public class Player : MonoBehaviour
             }
         }
 
-        if(other.gameObject.layer == 12) // Power Up Star
+        if(other.gameObject.layer == 12) // Power Up Star for speed and invincibility
         {
             Debug.Log("Power Up");
             Destroy(other.gameObject);
@@ -212,6 +236,7 @@ public class Player : MonoBehaviour
             Debug.Log("Water Collision");
             isSliding = false;//To stop the player from increasing in size after gameover
             // Because the ResetSlide() is called 0.75 sec after Slide() is called.
+            HealthManager.health = 0;
             FindObjectOfType<GameOver>().PauseOnGameOver();
         }
         
