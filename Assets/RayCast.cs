@@ -41,20 +41,6 @@ public class RayCast : MonoBehaviour
                 onSlope = true;
             else
                 onSlope = false;
-
-            if (hit.collider.tag == "Ground" && !Player.isGrounded)
-            {
-                //Debug.DrawRay(transform.position, Vector3.down * 0.7f, Color.green);
-                Player.rigidbodyComponent.AddForce(Vector3.down * 0.1f, ForceMode.VelocityChange);
-            }
-            if (hit.collider.tag == "WaterSurface")
-            {
-                onWater = true;
-                //Debug.DrawRay(transform.position, Vector3.down * 0.7f, Color.green);
-                Player.rigidbodyComponent.AddForce(Vector3.down * 0.1f, ForceMode.VelocityChange);
-            }
-            else
-                onWater = false;
         }
     }
 }

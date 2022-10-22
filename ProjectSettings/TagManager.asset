@@ -12,6 +12,7 @@ TagManager:
   - Ledge
   - Spike
   - Health
+  - Grass
   layers:
   - Default
   - TransparentFX

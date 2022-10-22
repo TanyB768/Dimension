@@ -29,7 +29,6 @@ public class GameOver : MonoBehaviour
 
         Player.doubleJumpKey = false;
         Player.isDashing = false;
-        Player.isGroundDashing = false;
         Player.isCrouching = false;
         Player.isSliding = false;
         Player.isClimbingUp = false;
