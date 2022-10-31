@@ -5,6 +5,7 @@ using UnityEngine.SceneManagement;//Whenever we want to deal with different scen
 
 public class MainMenu : MonoBehaviour
 {
+    public static bool logOut = false;
     public void PlayGame()
     {
         // SceneManager.LoadScene("Level 01"); we can also give scene name
@@ -14,6 +15,12 @@ public class MainMenu : MonoBehaviour
         SceneManager.LoadScene("Game");
         ScoreSystem.theScore = 0;
         Debug.Log("Playing Game");
+    }
+    //Function for the sign out button
+    public void LogOutButton()
+    {
+        logOut = true;
+        SceneManager.LoadScene("LoginRegister");
     }
 
     public void QuitGame()

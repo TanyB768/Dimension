@@ -109,7 +109,7 @@ public class SoundFX : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        if (other.gameObject.layer == 11) // Heart layer for Heart Power Up
+        if (other.gameObject.layer == 11 && HealthManager.health < 3) // Heart layer for Heart Power Up
         {
             heart.Play();
         }

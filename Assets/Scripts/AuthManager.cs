@@ -7,20 +7,20 @@ using UnityEngine.SceneManagement;
 
 public class AuthManager : MonoBehaviour
 {
-    //Firebase variables
+    // Firebase variables
     [Header("Firebase")]
     public DependencyStatus dependencyStatus;
     public FirebaseAuth auth;
     public FirebaseUser User;
 
-    //Login variables
+    // Login variables
     [Header("Login")]
     public TMP_InputField emailLoginField;
     public TMP_InputField passwordLoginField;
     public TMP_Text warningLoginText;
     public TMP_Text confirmLoginText;
 
-    //Register variables
+    // Register variables
     [Header("Register")]
     public TMP_InputField usernameRegisterField;
     public TMP_InputField emailRegisterField;
@@ -46,11 +46,30 @@ public class AuthManager : MonoBehaviour
         });
     }
 
+    private void Update()
+    {
+        if (MainMenu.logOut)
+            LogOutButton();
+    }
     private void InitializeFirebase()
     {
         Debug.Log("Setting up Firebase Auth");
         //Set the authentication instance object
         auth = FirebaseAuth.DefaultInstance;
+    }
+    
+    // To Clear Login & Register text fields when we sign out
+    public void ClearLoginFeilds()
+    {
+        emailLoginField.text = "";
+        passwordLoginField.text = "";
+    }
+    public void ClearRegisterFeilds()
+    {
+        usernameRegisterField.text = "";
+        emailRegisterField.text = "";
+        passwordRegisterField.text = "";
+        passwordRegisterVerifyField.text = "";
     }
 
     //Function for the login button
@@ -65,6 +84,17 @@ public class AuthManager : MonoBehaviour
     {
         //Call the register coroutine passing the email, password, and username
         StartCoroutine(Register(emailRegisterField.text, passwordRegisterField.text, usernameRegisterField.text));
+    }
+
+    //Function for the sign out button
+    public void LogOutButton()
+    {
+        auth.SignOut();
+        UIManager.instance.LoginScreen();
+        ClearRegisterFeilds();
+        ClearLoginFeilds();
+        MainMenu.logOut = false;
+        Debug.Log("User Logged Out");
     }
 
     public void QuitGame()
